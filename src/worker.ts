@@ -24,14 +24,14 @@ export default {
       }
 
       const buffer = await imageFile.arrayBuffer();
-      const image = new Uint8Array(buffer);
+      const image = new Uint8Array(buffer); // ✅ QUAN TRỌNG
 
       const input = {
-        image,
+        image,                        // ✅ Uint8Array
         prompt: String(prompt),
         strength: 0.7,
         guidance_scale: 7.5,
-        num_steps: 20,
+        num_steps: 20,               // ✅ max 20
         seed: 0,
         width: 768,
         height: 768
@@ -50,7 +50,16 @@ export default {
 
       const result = await env.AI.run(
         '@cf/stabilityai/stable-diffusion-xl-base-1.0',
-        input
+        {
+          prompt: 'Cyberpunk fashion character',
+          //image: image,
+          strength: 0.5,
+          guidance_scale: 5,
+          num_steps: 10,
+          seed: 1,
+          width: 512,
+          height: 512
+        }
       );
 
       return new Response(result, {
