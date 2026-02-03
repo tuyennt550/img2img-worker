@@ -18,48 +18,46 @@ export default {
 
       const imageFile = form.get('image');
       const prompt = form.get('prompt');
+      const negativePrompt = form.get('negativePrompt');
 
-      if (!(imageFile instanceof File) || !prompt) {
+      if (!(imageFile instanceof File) || !prompt || !negativePrompt) {
         return new Response('Missing image or prompt', { status: 400 });
       }
 
       const buffer = await imageFile.arrayBuffer();
-      const image = new Uint8Array(buffer); // ✅ QUAN TRỌNG
+      const image = new Uint8Array(buffer);
+      const base64 = btoa(
+        String.fromCharCode(...new Uint8Array(buffer))
+      );
 
       const input = {
-        image,                        // ✅ Uint8Array
         prompt: String(prompt),
-        strength: 0.7,
-        guidance_scale: 7.5,
-        num_steps: 20,               // ✅ max 20
-        seed: 0,
-        width: 768,
-        height: 768
+        negative_prompt: String(negativePrompt),
+        width: 512,
+        height: 512,
+        image_b64: base64,
+        num_steps : 20,
+        strength: 0.5,
+        guidance : 6,
+        //seed: 0,
       };
 
       console.log('AI input OK', {
         prompt: input.prompt,
-        strength: input.strength,
-        guidance_scale: input.guidance_scale,
-        num_steps: input.num_steps,
-        imageSize: image.length,
-        seed: input.seed,
+        negative_prompt: input.negative_prompt,
         width: input.width,
         height: input.height,
+        //imageSize: input.image.length,
+        num_steps : input.num_steps ,
+        strength: input.strength,
+        guidance : input.guidance ,
+        //seed: input.seed,
       });
 
+      //@cf/stabilityai/stable-diffusion-xl-base-1.0
       const result = await env.AI.run(
-        '@cf/stabilityai/stable-diffusion-xl-base-1.0',
-        {
-          prompt: 'Cyberpunk fashion character',
-          //image: image,
-          strength: 0.5,
-          guidance_scale: 5,
-          num_steps: 10,
-          seed: 1,
-          width: 512,
-          height: 512
-        }
+        '@cf/runwayml/stable-diffusion-v1-5-img2img',
+        input
       );
 
       return new Response(result, {
