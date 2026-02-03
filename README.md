@@ -8,6 +8,9 @@ npm install
 ## Deploy
 wrangler deploy
 
+## Check Log
+wrangler tail
+
 ## Test
 curl -X POST https://<your-worker>.workers.dev \
   -F "image=@test.png" \
