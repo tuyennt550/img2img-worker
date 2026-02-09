@@ -3,9 +3,9 @@ export interface Env {
 }
 
 const routes: Record<string, Function> = {
-  'POST:/api/v1/img2img': handleImg2Img,
+  'POST:/api/v1/image/image-to-image': handleImg2Img,
   //'POST:/api/txt2img': handleTxt2Img,
-  //'GET:/api/health': handleHealth,
+  'POST:/api/v1/text/summary': handleSummary,
 };
 
 export default {
@@ -103,6 +103,19 @@ async function handleImg2Img(req: Request, env: Env): Promise<Response> {
       'Cache-Control': 'no-store',
     },
   });
+}
+
+async function handleSummary(req: Request, env: Env): Promise<Response> {
+  const requestBody = await req.json();
+  const inputText = requestBody.text || "";
+  if (!inputText) {
+    return new Response("Missing text to summarize", { status: 400 });
+  }
+  const aiResponse = await env.AI.run("@cf/facebook/bart-large-cnn", {
+    input_text: inputText,
+    max_length: requestBody.maxLength || 256,
+  });
+  return Response.json(aiResponse);
 }
 
 async function streamToUint8Array(stream: ReadableStream) {
