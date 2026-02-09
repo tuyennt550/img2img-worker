@@ -6,6 +6,7 @@ const routes: Record<string, Function> = {
   'POST:/api/v1/image/image-to-image': handleImg2Img,
   //'POST:/api/txt2img': handleTxt2Img,
   'POST:/api/v1/text/summary': handleSummary,
+  'POST:/api/v1/text/generate': handleGenerateText,
 };
 
 export default {
@@ -114,6 +115,25 @@ async function handleSummary(req: Request, env: Env): Promise<Response> {
   const aiResponse = await env.AI.run("@cf/facebook/bart-large-cnn", {
     input_text: inputText,
     max_length: requestBody.maxLength || 256,
+  });
+  return Response.json(aiResponse);
+}
+
+async function handleGenerateText(req: Request, env: Env): Promise<Response> {
+  const requestBody = await req.json();
+  const prompt = requestBody.prompt || "";
+  if (!prompt) {
+    return new Response("Missing input prompt to generate", { status: 400 });
+  }
+  const messages = requestBody.messages || [
+    { role: "system", content: "You are a helpful assistant" },
+    { role: "user", content: requestBody.prompt || "" }
+  ];
+  const aiResponse = await env.AI.run("@hf/mistral/mistral-7b-instruct-v0.2", {
+    messages,
+    max_tokens: requestBody.max_tokens ?? 256,
+    temperature: requestBody.temperature ?? 0.7,
+    top_p: requestBody.top_p ?? 0.9
   });
   return Response.json(aiResponse);
 }
