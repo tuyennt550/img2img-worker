@@ -9,6 +9,12 @@ const routes: Record<string, Function> = {
   'POST:/api/v1/text/generate': handleGenerateText,
 };
 
+const MODELS = {
+  IMG2IMG: '@cf/runwayml/stable-diffusion-v1-5-img2img',
+  SUMMARY: '@cf/facebook/bart-large-cnn',
+  TEXT: '@hf/mistral/mistral-7b-instruct-v0.2',
+};
+
 export default {
   async fetch(req: Request, env: Env): Promise<Response> {
     const url = new URL(req.url);
@@ -95,7 +101,7 @@ async function handleImg2Img(req: Request, env: Env): Promise<Response> {
 
   //@cf/stabilityai/stable-diffusion-xl-base-1.0
   const result = await env.AI.run(
-    '@cf/runwayml/stable-diffusion-v1-5-img2img',
+    MODELS.IMG2IMG,
     input
   );
 
@@ -113,7 +119,7 @@ async function handleSummary(req: Request, env: Env): Promise<Response> {
   if (!inputText) {
     return new Response("Missing text to summarize", { status: 400 });
   }
-  const aiResponse = await env.AI.run("@cf/facebook/bart-large-cnn", {
+  const aiResponse = await env.AI.run(MODELS.SUMMARY, {
     input_text: inputText,
     max_length: requestBody.maxLength || 256,
   });
@@ -130,7 +136,7 @@ async function handleGenerateText(req: Request, env: Env): Promise<Response> {
     { role: "system", content: "You are a helpful assistant" },
     { role: "user", content: requestBody.prompt || "" }
   ];
-  const aiResponse = await env.AI.run("@hf/mistral/mistral-7b-instruct-v0.2", {
+  const aiResponse = await env.AI.run(MODELS.TEXT, {
     messages,
     max_tokens: requestBody.max_tokens ?? 256,
     temperature: requestBody.temperature ?? 0.7,
