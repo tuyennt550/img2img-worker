@@ -47,9 +47,10 @@ async function handleImg2Img(req: Request, env: Env): Promise<Response> {
   }
 
   const buffer = await imageFile.arrayBuffer();
-  const base64 = btoa(
-    String.fromCharCode(...new Uint8Array(buffer))
-  );
+  // const base64 = btoa(
+  //   String.fromCharCode(...new Uint8Array(buffer))
+  // );
+  const base64 = uint8ToBase64(new Uint8Array(buffer));
 
   const imageUint8 = new Uint8Array(buffer);
   const size = getImageSize(imageUint8);
@@ -209,4 +210,13 @@ function getImageSize(bytes: Uint8Array) {
   }
 
   return null;
+}
+
+function uint8ToBase64(bytes: Uint8Array) {
+  let binary = '';
+  const chunkSize = 0x8000; // 32KB
+  for (let i = 0; i < bytes.length; i += chunkSize) {
+    binary += String.fromCharCode(...bytes.subarray(i, i + chunkSize));
+  }
+  return btoa(binary);
 }
